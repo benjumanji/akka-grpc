@@ -9,6 +9,9 @@ lazy val `akka-grpc` =
     .settings(settings)
     .settings(
       libraryDependencies ++= Seq(
+        library.akkaStream,
+        library.grpcNetty,
+        library.grpcStub,
         library.scalaCheck % Test,
         library.scalaTest  % Test
       )
@@ -21,11 +24,16 @@ lazy val `akka-grpc` =
 lazy val library =
   new {
     object Version {
+      val akka       = "2.4.16"
+      val grpc       = "1.0.3"
       val scalaCheck = "1.13.4"
       val scalaTest  = "3.0.1"
     }
-    val scalaCheck = "org.scalacheck" %% "scalacheck" % Version.scalaCheck
-    val scalaTest  = "org.scalatest"  %% "scalatest"  % Version.scalaTest
+    val akkaStream = "com.typesafe.akka" %% "akka-stream" % Version.akka
+    val grpcNetty  = "io.grpc"           %  "grpc-netty"  % Version.grpc
+    val grpcStub   = "io.grpc"           %  "grpc-stub"   % Version.grpc
+    val scalaCheck = "org.scalacheck"    %% "scalacheck"  % Version.scalaCheck
+    val scalaTest  = "org.scalatest"     %% "scalatest"   % Version.scalaTest
 }
 
 // *****************************************************************************
