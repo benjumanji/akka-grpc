@@ -26,22 +26,28 @@ import io.grpc.stub.StreamObserver
 import scala.concurrent.Await
 import scala.concurrent.duration.{ Duration, DurationInt }
 
-final class ExampleService(implicit system: ActorSystem)
-    extends ExampleServiceGrpc.ExampleService {
-  import system.dispatcher
-
-  private implicit val mat = ActorMaterializer()
-
-  override def exampleCall(responseObserver: StreamObserver[ExampleResponse]) = {
-    val handler =
-      Flow[ExampleRequest]
-        .throttle(1, 1.second, 1, ThrottleMode.shaping)
-        .map(request => ExampleResponse(request.message.toUpperCase))
-    RequestObserver(handler, responseObserver)
-  }
-}
-
 object ExampleServerApp {
+
+  private final class ExampleService(implicit system: ActorSystem)
+      extends ExampleServiceGrpc.ExampleService {
+    import system.dispatcher
+
+    private implicit val mat = ActorMaterializer()
+
+    override def exampleCall(
+        responseObserver: StreamObserver[ExampleResponse]) = {
+//      val handler =
+//        Flow[ExampleRequest]
+//          .throttle(1, 1.second, 1, ThrottleMode.shaping)
+//          .map(request => ExampleResponse(request.message.toUpperCase))
+      val handler =
+        Flow[ExampleRequest]
+          .throttle(1, 1.second, 1, ThrottleMode.shaping)
+          .fold(Vector.empty[String])(_ :+ _.message.toUpperCase)
+          .map(messages => ExampleResponse(messages.mkString("/")))
+      RequestObserver(handler, responseObserver)
+    }
+  }
 
   def main(args: Array[String]): Unit = {
     implicit val system = ActorSystem()

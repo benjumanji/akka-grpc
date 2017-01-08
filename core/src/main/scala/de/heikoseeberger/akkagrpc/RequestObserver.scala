@@ -38,14 +38,12 @@ object RequestObserver {
     * Create a server-side gRPC stream observer for requests.
     *
     * @param handler transform requests into respons(es)
-    * @param responseObserver response observer provided by gRPC
+    * @param responseObserver stream observer for responses provided by gRPC
     * @param requestBufferSize buffer size for requests, 1 by default
     * @param ec implicit execution contetxt
     * @param mat implicit materializer
-    *
     * @tparam A request type
     * @tparam B response type
-    *
     * @return back-pressured server-side gRPC stream observer for requests
     */
   def apply[A, B](handler: Flow[A, B, Any],

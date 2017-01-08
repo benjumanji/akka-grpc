@@ -20,7 +20,17 @@ import io.grpc.stub.{ CallStreamObserver, StreamObserver }
 
 package object akkagrpc {
 
+  /**
+    * Implicitly converts a stream observer for responses to a more specific
+    * `CallStreamObserver` simply by downcasting. This seems to be safe, as gRPC
+    * seems to use the more specific `CallStreamObserver` when providing stream
+    * observer for responses.
+    *
+    * @param responseObserver stream observer for responses provided by gRPC
+    * @tparam A response type
+    * @return stream observer for responses downcasted to `CallStreamObserver[A]`
+    */
   implicit def toCallStreamObserver[A](
-      observer: StreamObserver[A]): CallStreamObserver[A] =
-    observer.asInstanceOf[CallStreamObserver[A]]
+      responseObserver: StreamObserver[A]): CallStreamObserver[A] =
+    responseObserver.asInstanceOf[CallStreamObserver[A]]
 }
