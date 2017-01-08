@@ -16,10 +16,11 @@
 
 package de.heikoseeberger
 
-package object akka {
+import io.grpc.stub.{ CallStreamObserver, StreamObserver }
 
-  type Traversable[+A] = scala.collection.immutable.Traversable[A]
-  type Iterable[+A]    = scala.collection.immutable.Iterable[A]
-  type Seq[+A]         = scala.collection.immutable.Seq[A]
-  type IndexedSeq[+A]  = scala.collection.immutable.IndexedSeq[A]
+package object akkagrpc {
+
+  implicit def toCallStreamObserver[A](
+      observer: StreamObserver[A]): CallStreamObserver[A] =
+    observer.asInstanceOf[CallStreamObserver[A]]
 }

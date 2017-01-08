@@ -5,9 +5,23 @@
 lazy val `akka-grpc` =
   project
     .in(file("."))
-    .enablePlugins(AutomateHeaderPlugin, GitVersioning)
+    .enablePlugins(GitVersioning)
+    .aggregate(core, example)
     .settings(settings)
     .settings(
+      unmanagedSourceDirectories.in(Compile) := Seq.empty,
+      unmanagedSourceDirectories.in(Test) := Seq.empty,
+      publishArtifact := false
+    )
+
+lazy val core =
+  project
+    .in(file("core"))
+    .enablePlugins(AutomateHeaderPlugin)
+    .disablePlugins(ProtocPlugin)
+    .settings(settings)
+    .settings(
+      name := "akka-grpc",
       libraryDependencies ++= Seq(
         library.akkaStream,
         library.grpcNetty,
@@ -15,6 +29,18 @@ lazy val `akka-grpc` =
         library.scalaCheck % Test,
         library.scalaTest  % Test
       )
+    )
+
+lazy val example =
+  project
+    .in(file("example"))
+    .enablePlugins(AutomateHeaderPlugin)
+    .dependsOn(core)
+    .settings(settings)
+    .settings(pbSettings)
+    .settings(
+      name := "akka-grpc-example",
+      publishArtifact := false
     )
 
 // *****************************************************************************
@@ -27,13 +53,15 @@ lazy val library =
       val akka       = "2.4.16"
       val grpc       = "1.0.3"
       val scalaCheck = "1.13.4"
+      val scalapb    = com.trueaccord.scalapb.compiler.Version.scalapbVersion
       val scalaTest  = "3.0.1"
     }
-    val akkaStream = "com.typesafe.akka" %% "akka-stream" % Version.akka
-    val grpcNetty  = "io.grpc"           %  "grpc-netty"  % Version.grpc
-    val grpcStub   = "io.grpc"           %  "grpc-stub"   % Version.grpc
-    val scalaCheck = "org.scalacheck"    %% "scalacheck"  % Version.scalaCheck
-    val scalaTest  = "org.scalatest"     %% "scalatest"   % Version.scalaTest
+    val akkaStream         = "com.typesafe.akka"      %% "akka-stream"          % Version.akka
+    val grpcNetty          = "io.grpc"                %  "grpc-netty"           % Version.grpc
+    val grpcStub           = "io.grpc"                %  "grpc-stub"            % Version.grpc
+    val scalaCheck         = "org.scalacheck"         %% "scalacheck"           % Version.scalaCheck
+    val scalapbRuntimeGrpc = "com.trueaccord.scalapb" %% "scalapb-runtime-grpc" % Version.scalapb
+    val scalaTest          = "org.scalatest"          %% "scalatest"            % Version.scalaTest
 }
 
 // *****************************************************************************
@@ -92,4 +120,15 @@ import de.heikoseeberger.sbtheader.license.Apache2_0
 lazy val headerSettings =
   Seq(
     headers := Map("scala" -> Apache2_0("2017", "Heiko Seeberger"))
+  )
+
+lazy val pbSettings =
+  Seq(
+    PB.protoSources.in(Compile) :=
+      Seq(sourceDirectory.in(Compile).value / "proto"),
+    PB.targets.in(Compile) :=
+      Seq(scalapb.gen() -> sourceManaged.in(Compile).value),
+    libraryDependencies ++= Seq(
+      library.scalapbRuntimeGrpc
+    )
   )
